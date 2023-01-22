@@ -18,6 +18,9 @@ function App() {
     return sounds;
   }, {});
 
+  let isPlaying = false;
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
   const soundFiles = [
     './straight.mp3',
     './legs_apart.mp3',
@@ -28,13 +31,35 @@ function App() {
     './hollowback.mp3'
   ];
 
-  // Load MoveNet
+  
+
+  async function play_sound(label) {
+    if (isPlaying) {
+      // Sound is already playing, so we don't play again
+      return;
+    }
+    
+    const soundUrl = sounds[soundFiles[label.findIndex(x => x === 1)]];
+    const soundBuffer = await fetch(soundUrl)
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
+
+    const sound = audioContext.createBufferSource();
+    sound.buffer = soundBuffer;
+    sound.connect(audioContext.destination);
+    sound.start();
+    isPlaying = true;
+    sound.onended = () => {
+      isPlaying = false;
+    };
+  }
+  /*
   function play_sound(label){
 
     console.log(soundFiles[label.findIndex(x => x === 1)]);
     new Audio(sounds[soundFiles[label.findIndex(x => x === 1)]]).play();
   }
-
+*/
 
   const runMoveNet = async () => {
     const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER};
@@ -60,6 +85,7 @@ function App() {
       const videoHeight = videoRef.current.videoHeight;
       console.log(video);
 
+      //play_sound([1,0,0,0,0,0,0]);
       // Set video width
       videoRef.current.width = videoWidth;
       videoRef.current.height = videoHeight;
