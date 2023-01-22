@@ -30,8 +30,9 @@ function App() {
 
   // Load MoveNet
   function play_sound(label){
+
     console.log(soundFiles[label.findIndex(x => x === 1)]);
-    new Audio(sounds[soundFiles[label.findIndex(x => x === 1)]]).play()
+    new Audio(sounds[soundFiles[label.findIndex(x => x === 1)]]).play();
   }
 
 
@@ -57,6 +58,7 @@ function App() {
       const video = videoRef.current;
       const videoWidth = videoRef.current.videoWidth;
       const videoHeight = videoRef.current.videoHeight;
+      console.log(video);
 
       // Set video width
       videoRef.current.width = videoWidth;
@@ -69,7 +71,7 @@ function App() {
       console.log(pose);
       // mirror pose
       pose[0]["keypoints"] = mirrorKeypoints(pose[0]["keypoints"],videoWidth);
-      console.log(pose);
+      
       
       //Check if whole body is visible
       let k = pose[0]["keypoints"]
