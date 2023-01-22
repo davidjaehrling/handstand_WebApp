@@ -170,7 +170,14 @@ export function get_angle(point_1, point_2, point_3, facing) {
   return angle;
 }
 
-
+export function mirrorKeypoints(keypoints, width) {
+  console.log(keypoints);
+  return keypoints.map(point => {
+    // x-Koordinate des Keypoints spiegeln
+    point.x = width - point.x;
+    return point;
+  });
+}
 /**
  * Draws a pose skeleton by looking up all adjacent keypoints/joints
  */

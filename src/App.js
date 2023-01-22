@@ -1,10 +1,10 @@
-import React,{useRef, useEffect,useState} from 'react';
+import React,{useRef, useEffect} from 'react';
 import './App.css';
 import * as poseDetection from '@tensorflow-models/pose-detection';
-import * as tf from '@tensorflow/tfjs-core';
+//import * as tf from '@tensorflow/tfjs-core';
 // Register one of the TF.js backends.
 import '@tensorflow/tfjs-backend-webgl';
-import { classify, drawKeypoints, drawSkeleton } from "./utilities";
+import { classify, drawKeypoints, drawSkeleton, mirrorKeypoints} from "./utilities";
 //import mp3 from "./mp3"
 
 
@@ -41,8 +41,9 @@ function App() {
     //
     setInterval(() => {
       detect(net);
-    }, 100);
+    }, 10);
   };
+
 
   
 
@@ -61,57 +62,61 @@ function App() {
       videoRef.current.width = videoWidth;
       videoRef.current.height = videoHeight;
 
-      // Make Detections
-      const pose = await net.estimatePoses(video);
 
-      if (Date.now() - lastTrueTime > 3000) {
-      
+      // Make Detections
+      const pose = await net.estimatePoses(video,{maxPoses: 1, flipHorizontal: true});
+
+      console.log(pose);
+      // mirror pose
+      pose[0]["keypoints"] = mirrorKeypoints(pose[0]["keypoints"],videoWidth);
+      console.log(pose);
       
       //Check if whole body is visible
       let k = pose[0]["keypoints"]
-      const label = classify(pose[0]["keypoints"]);
+      //let last_pose = pose[0]["keypoints"]
       if (pose[0]["keypoints"].every(keypoint => keypoint.score > 0.1)){
+        //whole body visible
         if (k[16].y<k[6].y || k[15].y<k[5].y){
-          //const label = classify(pose[0]["keypoints"]);
-          console.log(label)
+          //handstand detection starts when feet are above sholders
+          const label = classify(pose[0]["keypoints"]);
+          //console.log(label)
 
           if (Date.now() - lastTrueTime > 2000) {
-            // Your code to be executed every 3 seconds
-            //console.log("condition is true");
-            
+            // code to be executed every 3 seconds
+            lastTrueTime = Date.now();
             play_sound(label);
           }
         }
       }
-      lastTrueTime = Date.now();
-      }
       
-
-      
-      
-
+    
       drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
     }
   };
 
   const drawCanvas = (pose, video, videoWidth, videoHeight, canvas) => {
+    //const ctx = canvas.current.getContext("2d");
     const ctx = canvas.current.getContext("2d");
+
+
     canvas.current.width = videoWidth;
     canvas.current.height = videoHeight;
 
 
-    drawKeypoints(pose["keypoints"], 0.3, ctx);
-    drawSkeleton(pose["keypoints"], 0.3, ctx);
+    drawKeypoints(pose["keypoints"], 0.25, ctx);
+    drawSkeleton(pose["keypoints"], 0.25, ctx);
   };
 
 
   const getVideo = () => {
     navigator.mediaDevices
       .getUserMedia({ 
-        video: {facingMode: "user", width: 480, height: 640 }
+        audio: false,
+        video: { facingMode: "user", width: 480, height: 640 ,frameRate: {ideal:30}}
       }).then(stream => {
         let video = videoRef.current;
         video.srcObject = stream;
+
         video.play();
         console.log(video)
       })
@@ -122,10 +127,11 @@ function App() {
 
   useEffect(() => {
     getVideo();
-    runMoveNet();
+    
 
   }, [videoRef])
 
+  runMoveNet();
   
 
 

@@ -13,6 +13,11 @@
   }
 }
 
+video {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
