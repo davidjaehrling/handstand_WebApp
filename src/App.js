@@ -38,7 +38,8 @@ function App() {
   function play_sound(label){
     // later on when you actually want to play a sound at any point without user interaction
     soundEffect.src = sounds[soundFiles[label.findIndex(x => x === 1)]];
-    //soundEffect.play();
+    soundEffect.play();
+    console.log(sounds[soundFiles[label.findIndex(x => x === 1)]]);
   }
 
 
