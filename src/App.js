@@ -143,6 +143,9 @@ function App() {
         video: { facingMode: "user", width: 480, height: 640 ,frameRate: {ideal:30}}
       }).then(stream => {
         let video = videoRef.current;
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
         video.srcObject = stream;
 
         video.play();

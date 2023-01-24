@@ -171,7 +171,6 @@ export function get_angle(point_1, point_2, point_3, facing) {
 }
 
 export function mirrorKeypoints(keypoints, width) {
-  console.log(keypoints);
   return keypoints.map(point => {
     // x-Koordinate des Keypoints spiegeln
     point.x = width - point.x;
