@@ -12,14 +12,13 @@ function App() {
   let lastTrueTime = Date.now();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const soundContext = require.context('./mp3', true, /\.mp3$/);
   const sounds = soundContext.keys().reduce((sounds, soundFile) => {
     sounds[soundFile] = soundContext(soundFile);
     return sounds;
   }, {});
-
-  let isPlaying = false;
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const soundEffect = new Audio();
+  soundEffect.autoplay = true;
+  soundEffect.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
 
   const soundFiles = [
     './straight.mp3',
@@ -31,35 +30,15 @@ function App() {
     './hollowback.mp3'
   ];
 
-  
 
-  async function play_sound(label) {
-    if (isPlaying) {
-      // Sound is already playing, so we don't play again
-      return;
-    }
-    
-    const soundUrl = sounds[soundFiles[label.findIndex(x => x === 1)]];
-    const soundBuffer = await fetch(soundUrl)
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
 
-    const sound = audioContext.createBufferSource();
-    sound.buffer = soundBuffer;
-    sound.connect(audioContext.destination);
-    sound.start();
-    isPlaying = true;
-    sound.onended = () => {
-      isPlaying = false;
-    };
-  }
-  /*
+
   function play_sound(label){
-
-    console.log(soundFiles[label.findIndex(x => x === 1)]);
-    new Audio(sounds[soundFiles[label.findIndex(x => x === 1)]]).play();
+    // later on when you actually want to play a sound at any point without user interaction
+    soundEffect.src = sounds[soundFiles[label.findIndex(x => x === 1)]];
+    //soundEffect.play();
   }
-*/
+
 
   const runMoveNet = async () => {
     const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER};
@@ -83,18 +62,21 @@ function App() {
       const video = videoRef.current;
       const videoWidth = videoRef.current.videoWidth;
       const videoHeight = videoRef.current.videoHeight;
-      console.log(video);
+      //console.log(video);
 
-      //play_sound([1,0,0,0,0,0,0]);
       // Set video width
       videoRef.current.width = videoWidth;
       videoRef.current.height = videoHeight;
 
-
+      if (Date.now() - lastTrueTime > 2000) {
+        // code to be executed every 3 seconds
+        lastTrueTime = Date.now();
+        play_sound([0,0,0,1,0,0]);
+      }
       // Make Detections
       const pose = await net.estimatePoses(video,{maxPoses: 1, flipHorizontal: true});
 
-      console.log(pose);
+      //console.log(pose);
       // mirror pose
       pose[0]["keypoints"] = mirrorKeypoints(pose[0]["keypoints"],videoWidth);
       
@@ -149,7 +131,7 @@ function App() {
         video.srcObject = stream;
 
         video.play();
-        console.log(video)
+        //console.log(video)
       })
       .catch(err => {
         console.error(err);
