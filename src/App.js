@@ -12,6 +12,7 @@ function App() {
   let lastTrueTime = Date.now();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const soundContext = require.context('./mp3', true, /\.mp3$/);
   const sounds = soundContext.keys().reduce((sounds, soundFile) => {
     sounds[soundFile] = soundContext(soundFile);
     return sounds;
@@ -19,6 +20,7 @@ function App() {
   const soundEffect = new Audio();
   soundEffect.autoplay = true;
   soundEffect.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
 
   const soundFiles = [
     './straight.mp3',
@@ -71,7 +73,7 @@ function App() {
       if (Date.now() - lastTrueTime > 2000) {
         // code to be executed every 3 seconds
         lastTrueTime = Date.now();
-        play_sound([0,0,0,1,0,0]);
+        play_sound([0,1,0,0,0,0]);
       }
       // Make Detections
       const pose = await net.estimatePoses(video,{maxPoses: 1, flipHorizontal: true});
