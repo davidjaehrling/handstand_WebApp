@@ -5,11 +5,12 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 // Register one of the TF.js backends.
 import '@tensorflow/tfjs-backend-webgl';
 import { classify, drawKeypoints, drawSkeleton, mirrorKeypoints} from "./utilities";
-//import mp3 from "./mp3"
+//import * as tf from '@tensorflow/tfjs';
 
 
 function App() {
   let lastTrueTime = Date.now();
+  var k_last = 0;
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const soundContext = require.context('./mp3', true, /\.mp3$/);
@@ -20,8 +21,8 @@ function App() {
   const soundEffect = new Audio();
   soundEffect.autoplay = true;
   soundEffect.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-
-
+  
+  
   const soundFiles = [
     './straight.mp3',
     './legs_apart.mp3',
@@ -33,7 +34,25 @@ function App() {
   ];
 
 
+function getDistance(keypointsOld, keypointsNew) {
+    let maxDistance = 0;
+    
+    for (let i = 0; i < keypointsOld.length; i++) {
+        let xOld = keypointsOld[i].x;
+        let yOld = keypointsOld[i].y;
+        let xNew = keypointsNew[i].x;
+        let yNew = keypointsNew[i].y;
+        
+        let distance = Math.sqrt(Math.pow(xOld - xNew, 2) + Math.pow(yOld - yNew, 2));
+        //console.log(distance);
+        //console.log(keypointsNew[i].score);
+        if (distance > maxDistance & keypointsNew[i].score > 0.3) {
+            maxDistance = distance;
+        }
+    }
 
+    return maxDistance;
+}
 
   function play_sound(label){
     // later on when you actually want to play a sound at any point without user interaction
@@ -46,6 +65,14 @@ function App() {
   const runMoveNet = async () => {
     const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER};
     const net = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
+
+  
+    //const classify_model = await tf.loadModel({
+      modelUrl: ".tfjs_model/model.json",
+      weightsUrl: ".tfjs_model/weights.bin"
+    });
+    
+    console.log(classify_model);
     //
     setInterval(() => {
       detect(net);
@@ -71,36 +98,49 @@ function App() {
       videoRef.current.width = videoWidth;
       videoRef.current.height = videoHeight;
 
+
+      /* FÜR Tonaugabetest
       if (Date.now() - lastTrueTime > 2000) {
         // code to be executed every 3 seconds
         lastTrueTime = Date.now();
         play_sound([0,1,0,0,0,0]);
       }
+      */
+
       // Make Detections
       const pose = await net.estimatePoses(video,{maxPoses: 1, flipHorizontal: true});
 
-      //console.log(pose);
+      
       // mirror pose
       pose[0]["keypoints"] = mirrorKeypoints(pose[0]["keypoints"],videoWidth);
-      
-      
-      //Check if whole body is visible
       let k = pose[0]["keypoints"]
-      //let last_pose = pose[0]["keypoints"]
-      if (pose[0]["keypoints"].every(keypoint => keypoint.score > 0.1)){
-        //whole body visible
-        if (k[16].y<k[6].y || k[15].y<k[5].y){
-          //handstand detection starts when feet are above sholders
-          const label = classify(pose[0]["keypoints"]);
-          //console.log(label)
 
-          if (Date.now() - lastTrueTime > 2000) {
-            // code to be executed every 3 seconds
-            lastTrueTime = Date.now();
-            play_sound(label);
+      
+      if (k_last == 0) {
+        k_last = pose[0]["keypoints"]
+      }
+      let distance = getDistance(k_last,k);
+      k_last = pose[0]["keypoints"]
+
+
+      if (distance < 50){
+        //Validatie Keypoints
+        if (pose[0]["keypoints"].every(keypoint => keypoint.score > 0.1)){
+          //whole body visible
+          if (k[16].y<k[6].y || k[15].y<k[5].y){
+            //handstand detection starts when feet are above sholders
+            const label = classify(pose[0]["keypoints"]);
+            console.log(label)
+
+            if (Date.now() - lastTrueTime > 2000) {
+              // code to be executed every 3 seconds
+              lastTrueTime = Date.now();
+              play_sound(label);
+            }
           }
         }
       }
+      
       
     
       drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
