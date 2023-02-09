@@ -66,11 +66,12 @@ function getDistance(keypointsOld, keypointsNew) {
     const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER};
     const net = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
 
-  
-    //const classify_model = await tf.loadModel({
+    /*
+    const classify_model = await tf.loadModel({
       modelUrl: ".tfjs_model/model.json",
       weightsUrl: ".tfjs_model/weights.bin"
     });
+    */
     
     console.log(classify_model);
     //
