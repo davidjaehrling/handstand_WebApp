@@ -73,7 +73,7 @@ function getDistance(keypointsOld, keypointsNew) {
     });
     */
     
-    console.log(classify_model);
+    //console.log(classify_model);
     //
     setInterval(() => {
       detect(net);
