@@ -166,7 +166,7 @@ function getDistance(keypointsOld, keypointsNew) {
     navigator.mediaDevices
       .getUserMedia({ 
         audio: false,
-        video: { facingMode: "environment", width: 240, height: 426 ,frameRate: {ideal:30}}
+        video: { facingMode: {exact: "user"}, width: 240, height: 426 ,frameRate: {ideal:30}}
       }).then(stream => {
         let video = videoRef.current;
         video.setAttribute('autoplay', '');
