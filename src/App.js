@@ -166,7 +166,7 @@ function getDistance(keypointsOld, keypointsNew) {
     navigator.mediaDevices
       .getUserMedia({ 
         audio: false,
-        video: { facingMode: "user", width: 480, height: 640 ,frameRate: {ideal:30}}
+        video: { facingMode: "environment", width: 240, height: 426 ,frameRate: {ideal:30}}
       }).then(stream => {
         let video = videoRef.current;
         video.setAttribute('autoplay', '');
@@ -205,8 +205,8 @@ function getDistance(keypointsOld, keypointsNew) {
             right: 0,
             textAlign: "center",
             zindex: 9,
-            width: 480,
-            height: 640,
+            width: 240,//480,
+            height: 426,//640,
           }}
         />
 
@@ -220,8 +220,8 @@ function getDistance(keypointsOld, keypointsNew) {
             right: 0,
             textAlign: "center",
             zindex: 9,
-            width: 480,
-            height: 640,
+            width: 240,//480,
+            height: 426,//640,
           }}
         />
 
